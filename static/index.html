@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dishes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17-beta.0/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .section-container {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <section class="section section-container" style="padding-top: 24px; padding-bottom: 5px;">
+            <h2 class="title">Dishes</h2>
+            <dish
+                v-for="dish in dishes"
+                :key="dish.title"
+                :dish="dish"
+                @add-dish="onAddOrEditDish"
+                @delete-dish="deleteDish"
+            />
+        </section>
+        <section class="section section-container" style="padding-bottom: 10px;" >
+            <div class="box">
+                <add-edit-dish pagetitle="Add Dish" @add-dish="onAddOrEditDish" />
+            </div>
+        </section>
+    </div>
+    <script>
+        const AddEditDish = {
+            props: ['dish', 'pagetitle'],
+            data(){
+                return {
+                    id: this.dish ? this.dish.id : null,
+                    title: this.dish ? this.dish.title : '',
+                    description: this.dish ? this.dish.description : '',
+                    price: this.dish ? this.dish.price : '',
+                }
+            },
+            methods: {
+                save(){
+                    this.$emit('add-dish', {id: this.id, title: this.title, description: this.description, price: this.price})
+                    if(!this.id){
+                        this.title = '',
+                        this.description = '',
+                        this.price = ''
+                    }
+                }
+            },
+            template: `
+                <form class="form" @submit.prevent="save">
+                    <h3 class='subtitle'>{{ pagetitle }}</h3>
+                    <div class="field">
+                        <label>Dish Title</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model="title">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Dish Description</label>
+                        <div class="control">
+                            <textarea class="input" v-model="description" rows="10" cols="5"></textarea>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Dish Price</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model="price">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            `
+        }
+        const Dish = {
+            props: ['dish'],
+            components: {'add-edit-dish': AddEditDish},
+            data(){
+                return {
+                    showDetail: false,
+                }
+            },
+            methods: {
+                onAddOrEditDish(dish){
+                    this.$emit('add-dish', dish)
+                },
+                deleteDish(dish){
+                    this.$emit('delete-contact', dish)
+                }
+            },
+            template: `
+                <div class="card">
+                    <header class="card-header">
+                        <p @click="showDetail = !showDetail" class="card-header-title">
+                            {{ dish.title }}
+                        </p>
+                        <a class="card-header-icon" @click.stop="deleteDish(dish)">
+                            <span class="icon">
+                                <i class="fa fa-trash"></i>
+                            </span>
+                        </a>
+                    </header>
+                    <div v-show="showDetail" class="card-content">
+                        <add-edit-dish title="Details" :dish="dish" @add-dish="onAddOrEditDish" />
+                    </div>
+                </div>
+            `
+        }
+
+        new Vue({
+            el: '#app',
+            components: {dish: Dish, 'add-edit-dish': AddEditDish},
+            data: {
+                dishes: [],
+                baseURL: 'http://localhost:3000/api/dishes'
+            },
+            methods: {
+                onAddOrEditDish(dish){
+                    if(dish.id){
+                        this.updateDish(dish)
+                    }else{
+                        this.addDish(dish)
+                    }
+                },
+                addDish(dish){
+                    return axios.post(this.baseURL, dish)
+                    .then((response) => {
+                        const copy = this.dishes.slice()
+                        copy.push(response.data)
+                        this.dishes = copy
+                    })
+                },
+                updateDish(dish){
+                    return axios.put(`${this.baseURL}/${dish.id}`, dish)
+                    .then((response) => {
+                        const copy = this.dishes.slice()
+                        const idx = copy.findIndex((d) => d.id === response.data.id)
+                        copy[idx] = response.data
+                        this.dishes = copy
+                    })
+                },
+                deleteDish(dish){
+                    console.log('Deleting dishes', dish)
+                    return axios.delete(`${this.baseURL}/${dish.id}`)
+                    .then((response) => {
+                        let copy = this.dishes.slice()
+                        const idx = copy.findIndex((d) => d.id === response.data.id)
+                        copy.splice(idx, 1)
+                        this.dishes = copy
+                    })
+                }
+            },
+            beforeMount() {
+                axios.get(this.baseURL)
+                    .then((response) => {
+                        this.dishes = response.data
+                    })
+            },
+        });
+    </script>
+</body>
+
+</html>

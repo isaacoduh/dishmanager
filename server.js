@@ -7,6 +7,7 @@ const app = express();
 
 app.use(bodyParser.json());
 // Static files
+app.use(express.static(__dirname + '/static'));
 
 app.use(bodyParser.urlencoded({extended: true}));
 
