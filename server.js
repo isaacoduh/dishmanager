@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const db = require('./models');
 
 const app = express();
 
@@ -10,6 +11,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/api/dishes', (req, res) => {
     // TODO: retrieve all available dishes and send via response object
+    return db.Dish.findAll()
+        .then((dishes) => res.send(dishes))
+        .catch((err) => {
+            console.log('There was an issue retrieving dishes', JSON.stringify(err))
+            return res.send(err)
+        });
 } );
 
 app.post('/api/dishes', (req, res) => {
