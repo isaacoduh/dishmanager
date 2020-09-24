@@ -1,2 +1,2 @@
-![alt text](/screeshots/dishmanagerdemo.jpg)
-Format: ![Alt Text](url)
+![alt text](/screenshots/dishmanagerdemo.jpg)
+
