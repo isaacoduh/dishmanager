@@ -10,6 +10,8 @@ app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.use("/api/authentication", require('./routes/auth'));
+
 app.get('/api/dishes', (req, res) => {
     // TODO: retrieve all available dishes and send via response object
     return db.Dish.findAll()
