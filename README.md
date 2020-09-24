@@ -1,1 +1,2 @@
-![alt text](https://github.com/[isaacoduh]/[dishmanager]/blob/[master]/screenshots/dishmanagerdemo.jpg?raw=true)
+![alt text](/screeshots/dishmanagerdemo.jpg)
+Format: ![Alt Text](url)
